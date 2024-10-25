@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CNC G-code Drip Feeder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <!-- Custom CSS (if needed) -->
+  <style>
+    /* Custom scrollbar for the output area */
+    #output::-webkit-scrollbar {
+      width: 6px;
+    }
+    #output::-webkit-scrollbar-thumb {
+      background-color: #a0aec0;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+
+  <div class="container mx-auto p-4 max-w-2xl">
+    <h1 class="text-4xl font-bold text-center mb-8 text-gray-800">CNC G-code Drip Feeder</h1>
+
+    <!-- Connection Settings Card -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+      <h2 class="text-2xl font-semibold mb-4 text-gray-700 flex items-center">
+        <i class="fas fa-cogs mr-2 text-blue-500"></i> Connection Settings
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="comPort" class="block text-gray-600 font-medium mb-1">COM Port:</label>
+          <select id="comPort" name="comPort" class="w-full p-2 border border-gray-300 rounded">
+            <!-- COM ports will be dynamically populated -->
+          </select>
+        </div>
+        <div>
+          <label for="baudRate" class="block text-gray-600 font-medium mb-1">Baud Rate:</label>
+          <input type="number" id="baudRate" name="baudRate" value="115200" required
+                 class="w-full p-2 border border-gray-300 rounded">
+        </div>
+      </div>
+      <!-- Buttons -->
+      <div class="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-4 mt-6">
+        <button id="testBaudRateBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded flex items-center">
+          <i class="fas fa-plug mr-2"></i>
+          Test Connection
+          <span id="spinner" class="ml-2 hidden">
+            <i class="fas fa-spinner fa-spin"></i>
+          </span>
+        </button>
+        <form id="uploadForm" class="flex items-center space-x-2">
+          <label class="block">
+            <span class="sr-only">Choose G-code File</span>
+            <input type="file" id="gcodeFile" name="gcode" accept=".gcode,.nc" required
+                   class="block w-full text-sm text-gray-600
+                   file:mr-4 file:py-2 file:px-4
+                   file:rounded file:border-0
+                   file:text-sm file:font-semibold
+                   file:bg-blue-50 file:text-blue-700
+                   hover:file:bg-blue-100">
+          </label>
+          <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded flex items-center">
+            <i class="fas fa-cloud-upload-alt mr-2"></i>
+            Start Drip Feed
+          </button>
+        </form>
+      </div>
+      <div id="baudRateTestResult" class="text-sm text-gray-600 mt-4 text-center">
+        <!-- Baud rate test result badge will be displayed here -->
+      </div>
+    </div>
+
+    <!-- Output Card -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+      <h2 class="text-2xl font-semibold mb-4 text-gray-700 flex items-center">
+        <i class="fas fa-terminal mr-2 text-green-500"></i> Output
+      </h2>
+      <div id="output" class="bg-gray-800 rounded-lg p-4 text-sm text-green-400 h-64 overflow-y-scroll font-mono">
+        <!-- G-code output will appear here -->
+      </div>
+    </div>
+
+    <!-- Progress Card -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-2xl font-semibold mb-4 text-gray-700 flex items-center">
+        <i class="fas fa-tasks mr-2 text-yellow-500"></i> Progress
+      </h2>
+      <div class="relative pt-1">
+        <div class="overflow-hidden h-4 mb-4 text-xs flex rounded bg-gray-200">
+          <div id="progressBar" style="width: 0%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500 transition-all duration-300"></div>
+        </div>
+        <div id="progressText" class="text-center text-sm text-gray-600">
+          0% Completed
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-8 text-center text-gray-500 text-sm">
+      &copy; 2023 CNC G-code Drip Feeder
+    </footer>
+  </div>
+
+  <!-- Socket.IO -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const form = document.getElementById('uploadForm');
+    const output = document.getElementById('output');
+    const testBaudRateBtn = document.getElementById('testBaudRateBtn');
+    const baudRateTestResult = document.getElementById('baudRateTestResult');
+    const comPortSelect = document.getElementById('comPort');
+    const spinner = document.getElementById('spinner');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const socket = io();
+
+    // Fetch available COM ports from the server
+    function fetchComPorts() {
+      fetch('/com-ports')
+        .then(response => response.json())
+        .then(data => {
+          comPortSelect.innerHTML = ''; // Clear existing options
+          if (data.ports.length === 0) {
+            displayError("No COM ports found. Please connect a device.");
+            return;
+          }
+          data.ports.forEach(port => {
+            const option = document.createElement('option');
+            option.value = port.path;
+            option.textContent = `${port.path} (${port.manufacturer || 'Unknown'})`;
+            comPortSelect.appendChild(option);
+          });
+        })
+        .catch(error => {
+          displayError("Failed to fetch COM ports.");
+        });
+    }
+
+    // Display error messages
+    function displayError(message) {
+      baudRateTestResult.innerHTML = `<span class="bg-red-100 text-red-700 px-2 py-1 rounded-full">${message}</span>`;
+    }
+
+    // Populate COM ports on page load
+    window.onload = fetchComPorts;
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const fileInput = document.getElementById('gcodeFile');
+      const baudRate = document.getElementById('baudRate').value;
+      const comPort = comPortSelect.value;
+      const file = fileInput.files[0];
+      if (!file) {
+        displayError('Please choose a G-code file.');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('gcode', file);
+      formData.append('baudRate', baudRate);
+      formData.append('comPort', comPort);
+
+      fetch('/upload', {
+        method: 'POST',
+        body: formData,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          output.innerHTML += `<p class="text-green-400">File uploaded. Drip feeding started at ${baudRate} baud on ${comPort}...</p>`;
+          socket.emit('drip-feed', { filepath: data.filepath, baudRate, comPort });
+          progressBar.style.width = '0%'; // Reset progress bar
+          progressText.textContent = '0% Completed';
+        })
+        .catch(error => {
+          displayError('Failed to upload file.');
+        });
+    });
+
+    testBaudRateBtn.addEventListener('click', function () {
+      const baudRate = document.getElementById('baudRate').value;
+      const comPort = comPortSelect.value;
+      if (!comPort) {
+        displayError("Please select a COM port before testing the baud rate.");
+        return;
+      }
+
+      spinner.classList.remove("hidden"); // Show loading spinner
+      socket.emit('test-baud-rate', { baudRate, comPort });
+    });
+
+    socket.on('baud-rate-test-result', (result) => {
+      spinner.classList.add("hidden"); // Hide loading spinner
+      if (result.success) {
+        baudRateTestResult.innerHTML = `<span class="bg-green-100 text-green-700 px-2 py-1 rounded-full">Success at ${result.baudRate} on ${result.comPort}</span>`;
+      } else {
+        baudRateTestResult.innerHTML = `<span class="bg-red-100 text-red-700 px-2 py-1 rounded-full">Error: ${result.message || `Failed at ${result.baudRate}`}</span>`;
+      }
+    });
+
+    socket.on('gcode-line', (line) => {
+      output.innerHTML += `<p>${line}</p>`;
+      output.scrollTop = output.scrollHeight; // Auto-scroll to the bottom
+    });
+
+    socket.on('gcode-complete', (message) => {
+      output.innerHTML += `<p class="text-green-400">${message}</p>`;
+      progressBar.style.width = '100%'; // Complete the progress bar
+      progressText.textContent = '100% Completed';
+    });
+
+    socket.on('progress', (percent) => {
+      progressBar.style.width = `${percent}%`;
+      progressText.textContent = `${percent}% Completed`;
+    });
+
+    socket.on('error', (data) => {
+      displayError(data.message);
+    });
+  </script>
+</body>
+</html>

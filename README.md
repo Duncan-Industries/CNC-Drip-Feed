@@ -56,23 +56,23 @@ A web-based application that allows you to upload G-code files and send them to 
 
 This will install all the required packages listed in package.json, including:
 
--express
--multer
--socket.io
--serialport
--node-cron
+- express
+- multer
+- socket.io
+- serialport
+- node-cron
 
 ## Configuration
 No additional configuration is necessary for basic usage. The server listens on port 3000 by default. If you wish to change the port, you can set the PORT environment variable:
 
-bash
-Copy code
-export PORT=8080
+   ```bash
+   export PORT=8080
+
 ## Usage
 Starting the Server
 Run the following command to start the server:
 
-bash
+   ```bash
 Copy code
 node server.js
 You should see an output indicating the server is running:

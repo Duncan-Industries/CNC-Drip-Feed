@@ -56,18 +56,19 @@ A web-based application that allows you to upload G-code files and send them to 
 
 This will install all the required packages listed in package.json, including:
 
-express
-multer
-socket.io
-serialport
-node-cron
-Configuration
+-express
+-multer
+-socket.io
+-serialport
+-node-cron
+
+## Configuration
 No additional configuration is necessary for basic usage. The server listens on port 3000 by default. If you wish to change the port, you can set the PORT environment variable:
 
 bash
 Copy code
 export PORT=8080
-Usage
+## Usage
 Starting the Server
 Run the following command to start the server:
 
@@ -79,32 +80,32 @@ You should see an output indicating the server is running:
 arduino
 Copy code
 Server is running on http://localhost:3000
-Accessing the Web Interface
+### Accessing the Web Interface
 Open your web browser and navigate to:
 
 arduino
 Copy code
 http://localhost:3000
-Uploading and Sending G-code
-Select COM Port and Baud Rate
+### Uploading and Sending G-code
+1. Select COM Port and Baud Rate
 
 The COM port dropdown will automatically populate with available COM ports.
 Select the appropriate COM port connected to your CNC machine.
 Enter the baud rate that matches your CNC machine's configuration.
-Test Connection
+2. Test Connection
 
 Click on the Test Connection button to verify the serial communication.
 A success or error message will appear, indicating the connection status.
-Upload G-code File
+3. Upload G-code File
 
 Click on the Choose G-code File button and select a .gcode or .nc file from your computer.
-Start Drip Feed
+4. Start Drip Feed
 
 Click on the Start Drip Feed button.
 The application will begin sending the G-code to your CNC machine.
 Monitor the Output section to see the G-code lines being sent.
 The Progress bar will update in real-time to show the completion percentage.
-Security Considerations
+## Security Considerations
 File Validation: Only .gcode and .nc files are accepted for upload to prevent unauthorized file types.
 Input Sanitization: User inputs for baud rate and COM port are validated to prevent injection attacks.
 File Storage: Uploaded files are stored with sanitized filenames to prevent directory traversal attacks.

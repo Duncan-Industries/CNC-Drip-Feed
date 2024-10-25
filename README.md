@@ -69,17 +69,18 @@ No additional configuration is necessary for basic usage. The server listens on 
    export PORT=8080
 
 ## Usage
+
 Starting the Server
 Run the following command to start the server:
 
    ```bash
-Copy code
-node server.js
+   node server.js
+
 You should see an output indicating the server is running:
 
-arduino
+```bash
 Copy code
-Server is running on http://localhost:3000
+Server is running on http://localhost:3000 
 ### Accessing the Web Interface
 Open your web browser and navigate to:
 

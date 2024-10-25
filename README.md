@@ -48,6 +48,7 @@ A web-based application that allows you to upload G-code files and send them to 
    ```bash
    git clone https://github.com/yourusername/cnc-gcode-drip-feeder.git
    cd cnc-gcode-drip-feeder
+   ```
 
 2. **Install Dependencies**
 
@@ -67,7 +68,7 @@ No additional configuration is necessary for basic usage. The server listens on 
 
    ```bash
    export PORT=8080
-
+   ```
 ## Usage
 
 Starting the Server
@@ -75,18 +76,19 @@ Run the following command to start the server:
 
    ```bash
    node server.js
-
+   ```
 You should see an output indicating the server is running:
 
 ```bash
-Copy code
 Server is running on http://localhost:3000 
+```
 ### Accessing the Web Interface
 Open your web browser and navigate to:
 
-arduino
-Copy code
+```arduino 
 http://localhost:3000
+```
+
 ### Uploading and Sending G-code
 1. Select COM Port and Baud Rate
 
@@ -106,6 +108,7 @@ Click on the Start Drip Feed button.
 The application will begin sending the G-code to your CNC machine.
 Monitor the Output section to see the G-code lines being sent.
 The Progress bar will update in real-time to show the completion percentage.
+
 ## Security Considerations
 File Validation: Only .gcode and .nc files are accepted for upload to prevent unauthorized file types.
 Input Sanitization: User inputs for baud rate and COM port are validated to prevent injection attacks.
@@ -122,8 +125,7 @@ Adjustment for Windows Users:
 
 In server.js, modify the COM port filtering logic:
 
-javascript
-Copy code
+```javascript
 // Original code
 const linuxPorts = ports.filter((port) => port.path.startsWith('/dev/tty'));
 
@@ -134,6 +136,7 @@ const availablePorts = ports.filter((port) => {
     port.path.startsWith('COM') // For Windows
   );
 });
+```
 Serial Communication Errors: If you encounter errors during serial communication, ensure that no other application is using the COM port and that the baud rate matches your CNC machine's settings.
 
 Contributing
@@ -141,23 +144,22 @@ Contributions are welcome! Please follow these steps:
 
 Fork the Repository
 
-Click the "Fork" button at the top right of the repository page.
-
 Create a Branch
 
-bash
-Copy code
+```bash
 git checkout -b feature/your-feature-name
+```
 Commit Your Changes
 
-bash
-Copy code
+```bash
 git commit -m "Description of your changes"
+```
+
 Push to Your Fork
 
-bash
-Copy code
+```bash
 git push origin feature/your-feature-name
+```
 Submit a Pull Request
 
 Go to your fork on GitHub and open a pull request to the main repository.

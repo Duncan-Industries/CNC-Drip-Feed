@@ -110,18 +110,19 @@ Monitor the Output section to see the G-code lines being sent.
 The Progress bar will update in real-time to show the completion percentage.
 
 ## Security Considerations
-File Validation: Only .gcode and .nc files are accepted for upload to prevent unauthorized file types.
-Input Sanitization: User inputs for baud rate and COM port are validated to prevent injection attacks.
-File Storage: Uploaded files are stored with sanitized filenames to prevent directory traversal attacks.
-Automatic File Cleanup: Files older than 30 days are automatically deleted to manage disk space and reduce risk.
-File Management
-Uploads Directory: Uploaded G-code files are stored in the uploads directory.
-Automatic Deletion: A scheduled task runs daily at midnight to delete files older than 30 days from the uploads directory.
-Manual Cleanup: You can manually delete files from the uploads directory if needed.
-Known Issues
-COM Port Detection on Windows: The application filters COM ports starting with /dev/tty, which is suitable for Linux/macOS. Windows users may need to adjust the code to detect COM ports like COM3, COM4, etc.
+- File Validation: Only .gcode and .nc files are accepted for upload to prevent unauthorized file types.
+- Input Sanitization: User inputs for baud rate and COM port are validated to prevent injection attacks.
+- File Storage: Uploaded files are stored with sanitized filenames to prevent directory traversal attacks.
+- Automatic File Cleanup: Files older than 30 days are automatically deleted to manage disk space and reduce risk.
 
-Adjustment for Windows Users:
+## File Management
+- Uploads Directory: Uploaded G-code files are stored in the uploads directory.
+- Automatic Deletion: A scheduled task runs daily at midnight to delete files older than 30 days from the uploads directory.
+- Manual Cleanup: You can manually delete files from the uploads directory if needed.
+## Known Issues
+- COM Port Detection on Windows: The application filters COM ports starting with /dev/tty, which is suitable for Linux/macOS. Windows users may need to adjust the code to detect COM ports like COM3, COM4, etc.
+
+- **Adjustment for Windows Users:**
 
 In server.js, modify the COM port filtering logic:
 
@@ -137,39 +138,39 @@ const availablePorts = ports.filter((port) => {
   );
 });
 ```
-Serial Communication Errors: If you encounter errors during serial communication, ensure that no other application is using the COM port and that the baud rate matches your CNC machine's settings.
+- **Serial Communication Errors:** If you encounter errors during serial communication, ensure that no other application is using the COM port and that the baud rate matches your CNC machine's settings.
 
 Contributing
 Contributions are welcome! Please follow these steps:
 
-Fork the Repository
+1. Fork the Repository
+Click the "Fork" button at the top right of the repository page.
 
-Create a Branch
-
+2. Create a Branch
 ```bash
 git checkout -b feature/your-feature-name
 ```
-Commit Your Changes
+3. Commit Your Changes
 
 ```bash
 git commit -m "Description of your changes"
 ```
 
-Push to Your Fork
+4. Push to Your Fork
 
 ```bash
 git push origin feature/your-feature-name
 ```
-Submit a Pull Request
+5. Submit a Pull Request
 
 Go to your fork on GitHub and open a pull request to the main repository.
 
-License
+## License
 This project is licensed under the MIT License. See the LICENSE file for details.
 
 Acknowledgments
-Node.js: For providing the server-side JavaScript runtime environment.
-Express: For the web framework used to build the server.
-Socket.IO: For enabling real-time bidirectional communication between the server and clients.
-Tailwind CSS: For providing the utility-first CSS framework for styling.
-Font Awesome: For the icons used in the web interface.
+- Node.js: For providing the server-side JavaScript runtime environment.
+- Express: For the web framework used to build the server.
+- Socket.IO: For enabling real-time bidirectional communication between the server and clients.
+- Tailwind CSS: For providing the utility-first CSS framework for styling.
+- Font Awesome: For the icons used in the web interface.

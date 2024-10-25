@@ -51,9 +51,9 @@ A web-based application that allows you to upload G-code files and send them to 
 
 2. **Install Dependencies**
 
-```bash
-Copy code
-npm install
+   ```bash
+   npm install
+
 This will install all the required packages listed in package.json, including:
 
 express

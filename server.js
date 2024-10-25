@@ -9,6 +9,7 @@ const readline = require('readline');
 const socketIo = require('socket.io');
 const http = require('http');
 const { SerialPort } = require('serialport');
+const cron = require('node-cron'); // Added for scheduling tasks
 
 const app = express();
 const server = http.createServer(app);
@@ -311,6 +312,28 @@ async function countLinesInFile(filePath) {
       });
   });
 }
+
+// Scheduled task to delete files older than 30 days
+cron.schedule('0 0 * * *', async () => {
+  // This cron job runs every day at midnight
+  console.log('Running scheduled task to delete old files...');
+  const now = Date.now();
+  const files = await fsPromises.readdir(uploadsDir);
+
+  for (const file of files) {
+    const filePath = path.join(uploadsDir, file);
+    try {
+      const stats = await fsPromises.stat(filePath);
+      const fileAgeInDays = (now - stats.mtimeMs) / (1000 * 60 * 60 * 24);
+      if (fileAgeInDays > 30) {
+        await fsPromises.unlink(filePath);
+        console.log(`Deleted old file: ${file}`);
+      }
+    } catch (err) {
+      console.error(`Error deleting file ${file}:`, err.message);
+    }
+  }
+});
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
